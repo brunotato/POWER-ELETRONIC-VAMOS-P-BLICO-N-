@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt‑BR">
+<head>
+<meta charset="UTF‑8">
+<meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+<title>Power Electronic – Ordem de Serviço</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif;margin:0;padding:0;}
+body{background:#f4f4f4;padding:14px;max-width:720px;margin:0 auto;}
+.cabecalho{text-align:center;background:#222;color:white;padding:12px;border-radius:8px;margin-bottom:14px;}
+.cabecalho h2{font-size:17px;margin-bottom:3px;}
+.cabecalho p{font-size:12px;}
+.menu{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;}
+.menu button{flex:1;padding:10px;border:none;border-radius:6px;color:white;background:#2563eb;cursor:pointer;}
+.menu button.ativo{background:#0891b2;}
+.box{background:white;padding:14px;border-radius:8px;margin-bottom:12px;}
+h3{margin-bottom:8px;font-size:16px;}
+.linha{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;}
+.grupo{flex:1;min-width:100px;}
+label{font-size:13px;display:block;margin-bottom:3px;}
+input, select, textarea{width:100%;padding:8px;border:1px solid #bbb;border-radius:5px;font-size:14px;}
+textarea{min-height:70px;resize:vertical;}
+.botoes{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+button{padding:9px 12px;border:none;border-radius:6px;color:white;cursor:pointer;}
+button.salvar{background:#16a34a;}
+button.secundario{background:#6b7280;}
+button.perigo{background:#dc2626;}
+button.pdf{background:#059669;}
+.tela{display:none;}
+.tela.ativa{display:block;}
+.itemLista{border:1px solid #ccc;padding:10px;margin:8px 0;border-radius:6px;}
+.total{font-weight:bold;font-size:16px;color:#16a34a;}
+#areaPDF{display:none;}
+.avaria‑item{display:flex;gap:4px;align‑items:center;}
+</style>
+</head>
+<body>
+
+<div class="cabecalho">
+  <h2>⚡ POWER ELECTRONIC ⚡</h2>
+  <p>Auto Elétrica e Automotivo | Rua Comandante Salgado, 1301 ‑ Sorocaba‑SP | (15) 97404‑3309</p>
+</div>
+
+<div class="menu">
+  <button onclick="abrirTela('telaCliente')">👤 Cadastro Cliente</button>
+  <button onclick="abrirTela('telaOS')">📝 Nova OS / Orçamento</button>
+  <button onclick="abrirTela('telaHistorico')">📚 Histórico</button>
+  <button onclick="abrirTela('telaProduto')">📦 Produtos</button>
+</div>
+
+<!-- TELA 1: CADASTRO CLIENTE -->
+<div id="telaCliente" class="tela ativa">
+<div class="box">
+  <h3>👤 Cadastro de Cliente</h3>
+  <div class="linha">
+    <div class="grupo">
+      <label>Nome Completo</label>
+      <input type="text" id="cliNome">
+    </div>
+    <div class="grupo">
+      <label>Telefone / WhatsApp</label>
+      <input type="text" id="cliTelefone">
+    </div>
+  </div>
+  <div class="linha">
+    <div class="grupo">
+      <label>CPF (opcional)</label>
+      <input type="text" id="cliCpf">
+    </div>
+    <div class="grupo">
+      <label>Endereço (opcional)</label>
+      <input type="text" id="cliEndereco">
+    </div>
+  </div>
+  <div class="botoes">
+    <button class="salvar" onclick="salvarCliente()">💾 Salvar Cliente</button>
+    <button class="secundario" onclick="limparCliente()">🧹 Limpar</button>
+  </div>
+  <h4 style="margin‑top:14px;">Lista Clientes Cadastrados</h4>
+  <select id="selectCliente" onchange="carregarDadosCliente()">
+    <option value="">Selecione um cliente para carregar na OS</option>
+  </select>
+  <div id="listaClientes"></div>
+</div>
+</div>
+
+<!-- TELA 2: NOVA ORDEM DE SERVIÇO -->
+<div id="telaOS" class="tela">
+<div class="box">
+  <h3>Dados Cliente / Veículo</h3>
+  <div class="linha">
+    <div class="grupo">
+      <label>Tipo</label>
+      <select id="tipoOS">
+        <option>ORÇAMENTO</option>
+        <option>ORDEM DE SERVIÇO</option>
+      </select>
+    </div>
+    <div class="grupo">
+      <label>Status</label>
+      <select id="statusOS">
+        <option>ABERTA</option>
+        <option>EM ANDAMENTO</option>
+        <option>CONCLUÍDA</option>
+      </select>
+    </div>
+  </div>
+  <div class="linha">
+    <div class="grupo">
+      <label>Cliente (selecionar da lista)</label>
+      <select id="osSelectCliente">
+        <option value="">Selecione Cliente</option>
+      </select>
+    </div>
+    <div class="grupo">
+      <label>Data da OS</label>
+      <input type="date" id="dataOS">
+    </div>
+  </div>
+  <div class="linha">
+    <div class="grupo">
+      <label>Marca do Carro</label>
+      <input type="text" id="nomeCarro" placeholder="Ex: Toyota">
+    </div>
+    <div class="grupo">
+      <label>Modelo / Ano</label>
+      <input type="text" id="modeloCarro" placeholder="Ex: Corolla Altis 2013">
+    </div>
+  </div>
+  <div class="linha">
+    <div class="grupo">
+      <label>Placa</label>
+      <input type="text" id="placaCarro">
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <h3>⚠️ AVARIAS NO VEÍCULO</h3>
+  <div class="linha">
+    <div class="avaria‑item"><input type="checkbox" id="avariaFarol"><label>Farol</label></div>
+    <div class="avaria‑item"><input type="checkbox" id="avariaParaChoque"><label>Para‑choque</label></div>
+    <div class="avaria‑item"><input type="checkbox" id="avariaLanterna"><label>Lanterna</label></div>
+  </div>
+  <div class="linha">
+    <div class="avaria‑item"><input type="checkbox" id="avariaRetrovisor"><label>Retrovisor</label></div>
+    <div class="avaria‑item"><input type="checkbox" id="avariaParabrisa"><label>Parabrisa</label></div>
+    <div class="avaria‑item"><input type="checkbox" id="avariaNenhuma"><label>Sem avaria</label></div>
+  </div>
+  <div class="grupo">
+    <label>Observação sobre avaria</label>
+    <textarea id="obsAvaria" placeholder="Ex: Farol esquerdo trincado…"></textarea>
+  </div>
+</div>
+
+<div class="box">
+  <h3>💳 Forma de Pagamento</h3>
+  <div class="linha">
+    <div class="grupo">
+      <label>Forma Pagamento</label>
+      <select id="formaPagamento">
+        <option value="">Selecione</option>
+        <option>PIX</option>
+        <option>Transferência</option>
+        <option>Débito</option>
+        <option>Crédito</option>
+        <option>Prazo</option>
+      </select>
+    </div>
+    <div class="grupo">
+      <label>Data Vencimento (se prazo)</label>
+      <input type="date" id="dataVencimento">
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <h3>🔧 Serviços Auto Elétrica</h3>
+  <div class="linha">
+    <div class="grupo">
+      <label>Serviço</label>
+      <select id="selServico">
+        <option value="">Selecione</option>
+        <option value="Alternador">Alternador</option>
+        <option value="Motor Arranque">Motor de Arranque</option>
+        <option value="Vidro Elétrico / Trava">Vidro Elétrico / Trava</option>
+        <option value="Alarme / Localizador">Alarme / Localizador</option>
+        <option value="Ar Condicionado">Ar Condicionado</option>
+        <option value="Som Automotivo">Som Automotivo</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </div>
+    <div class="grupo">
+      <label>Valor Mão de Obra R$</label>
+      <input type="number" step="0.01" id="valorMao">
+    </div>
+  </div>
+  <div class="linha">
+    <div class="grupo">
+      <label>Peça / Produto</label>
+      <input type="text" id="nomeProdutoOS">
+    </div>
+    <div class="grupo">
+      <label>Valor Peça R$</label>
+      <input type="number" step="0.01" id="valorProdutoOS">
+    </div>
+  </div>
+  <div class="grupo">
+    <label>Defeito relatado pelo cliente</label>
+    <textarea id="obsOS"></textarea>
+  </div>
+  <div class="botoes">
+    <button class="salvar" onclick="salvarOS()">💾 Salvar Ordem</button>
+    <button class="pdf" onclick="gerarPDFAtual()">📄 Gerar PDF</button>
+    <button class="secundario" onclick="limparOS()">🧹 Limpar</button>
+  </div>
+</div>
+</div>
+
+<!-- TELA 3: HISTÓRICO -->
+<div id="telaHistorico" class="tela">
+<h3>📚 HISTÓRICO DE ORDENS / ORÇAMENTOS</h3>
+<div id="listaHistorico"></div>
+</div>
+
+<!-- TELA 4: CADASTRO PRODUTOS -->
+<div id="telaProduto" class="tela">
+<div class="box">
+  <h3>Cadastro Produto / Peça</h3>
+  <div class="linha">
+    <div class="grupo">
+      <label>Nome Produto</label>
+      <input type="text" id="nomeProduto">
+    </div>
+    <div class="grupo">
+      <label>Valor R$</label>
+      <input type="number" step="0.01" id="valorProduto">
+    </div>
+  </div>
+  <div class="botoes">
+    <button class="salvar" onclick="salvarProduto()">💾 Salvar Produto</button>
+  </div>
+  <div id="listaProdutos"></div>
+</div>
+</div>
+
+<!-- ÁREA OCULTA PARA IMPRESSÃO / PDF -->
+<div id="areaPDF">
+  <div style="text‑align:center;margin‑bottom:20px;">
+    <h2>⚡ POWER ELECTRONIC ⚡</h2>
+    <p>Auto Elétrica e Automotivo | Rua Comandante Salgado, 1301 ‑ Sorocaba‑SP | (15) 97404‑3309</p>
+    <h3>ORDEM / ORÇAMENTO</h3>
+  </div>
+  <pre id="textoPDF"></pre>
+</div>
+
+<script>
+// Alternar telas
+function abrirTela(idTela){
+  document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
+  document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("ativo"));
+  document.getElementById(idTela).classList.add("ativa");
+  if(idTela==="telaCliente") carregarSelectCliente();
+  if(idTela==="telaOS") carregarSelectClienteOS();
+  if(idTela==="telaHistorico") carregarHistorico();
+  if(idTela==="telaProduto") carregarListaProduto();
+}
+
+// ######### CLIENTE #########
+function salvarCliente(){
+  var cli = {
+    nome: document.getElementById("cliNome").value,
+    telefone: document.getElementById("cliTelefone").value,
+    cpf: document.getElementById("cliCpf").value,
+    endereco: document.getElementById("cliEndereco").value
+  };
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  listaCli.push(cli);
+  localStorage.setItem("listaCliente", JSON.stringify(listaCli));
+  alert("✅ Cliente cadastrado!");
+  limparCliente();
+  carregarSelectCliente();
+}
+
+function limparCliente(){
+  document.getElementById("cliNome").value="";
+  document.getElementById("cliTelefone").value="";
+  document.getElementById("cliCpf").value="";
+  document.getElementById("cliEndereco").value="";
+}
+
+function carregarSelectCliente(){
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  var sel = document.getElementById("selectCliente");
+  sel.innerHTML="<option value=''>Selecione um cliente</option>";
+  for(var i=0;i<listaCli.length;i++){
+    sel.innerHTML += "<option value='"+i+"'>"+listaCli[i].nome+" ‑ "+listaCli[i].telefone+"</option>";
+  }
+}
+
+function carregarDadosCliente(){
+  var ind = document.getElementById("selectCliente").value;
+  if(ind==="") return;
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  var c = listaCli[ind];
+  document.getElementById("cliNome").value = c.nome;
+  document.getElementById("cliTelefone").value = c.telefone;
+  document.getElementById("cliCpf").value = c.cpf;
+  document.getElementById("cliEndereco").value = c.endereco;
+}
+
+function carregarSelectClienteOS(){
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  var selOS = document.getElementById("osSelectCliente");
+  selOS.innerHTML="<option value=''>Selecione Cliente</option>";
+  for(var i=0;i<listaCli.length;i++){
+    selOS.innerHTML += "<option value='"+i+"'>"+listaCli[i].nome+"</option>";
+  }
+}
+
+// ######### AVARIAS #########
+function pegarAvarias(){
+  var avarias = [];
+  if(document.getElementById("avariaFarol").checked) avarias.push("Farol");
+  if(document.getElementById("avariaParaChoque").checked) avarias.push("Para‑choque");
+  if(document.getElementById("avariaLanterna").checked) avarias.push("Lanterna");
+  if(document.getElementById("avariaRetrovisor").checked) avarias.push("Retrovisor");
+  if(document.getElementById("avariaParabrisa").checked) avarias.push("Parabrisa");
+  if(document.getElementById("avariaNenhuma").checked) avarias.push("Sem avaria");
+  return avarias.join(", ");
+}
+
+// ######### PDF / TEXTO #########
+function montarTextoOS(obj){
+  var texto = "TIPO: "+obj.tipo+"\nSTATUS: "+obj.status+"\nDATA OS: "+obj.dataOS+"\n";
+  texto += "CLIENTE: "+obj.clienteNome+"\nTELEFONE: "+obj.clienteTel+"\n";
+  texto += "MARCA: "+obj.nomeCarro+"\nMODELO/ANO: "+obj.modeloCarro+"\nPLACA: "+obj.placa+"\n";
+  texto += "AVARIAS: "+obj.avarias+"\nOBS AVARIA: "+obj.obsAvaria+"\n";
+  texto += "FORMA PAGAMENTO: "+obj.formaPagamento+"\nVENCIMENTO: "+obj.dataVencimento+"\n";
+  texto += "SERVIÇO: "+obj.servico+"\nMÃO DE OBRA R$: "+obj.maoObra+"\n";
+  texto += "PEÇA: "+obj.pecaNome+" | VALOR PEÇA R$: "+obj.pecaValor+"\n";
+  texto += "DEFEITO CLIENTE: "+obj.obs+"\n";
+  texto += "TOTAL R$: "+obj.total+"\nDATA REGISTRO: "+obj.dataHora;
+  return texto;
+}
+
+function gerarPDFAtual(){
+  var indCli = document.getElementById("osSelectCliente").value;
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  var dadoCli = indCli!=="" ? listaCli[indCli] : {nome:"",telefone:""};
+
+  var obj = {
+    tipo: document.getElementById("tipoOS").value,
+    status: document.getElementById("statusOS").value,
+    dataOS: document.getElementById("dataOS").value,
+    clienteNome: dadoCli.nome,
+    clienteTel: dadoCli.telefone,
+    nomeCarro: document.getElementById("nomeCarro").value,
+    modeloCarro: document.getElementById("modeloCarro").value,
+    placa: document.getElementById("placaCarro").value,
+    avarias: pegarAvarias(),
+    obsAvaria: document.getElementById("obsAvaria").value,
+    formaPagamento: document.getElementById("formaPagamento").value,
+    dataVencimento: document.getElementById("dataVencimento").value,
+    servico: document.getElementById("selServico").value,
+    maoObra: Number(document.getElementById("valorMao").value || 0),
+    pecaNome: document.getElementById("nomeProdutoOS").value,
+    pecaValor: Number(document.getElementById("valorProdutoOS").value || 0),
+    obs: document.getElementById("obsOS").value,
+    total: (Number(document.getElementById("valorMao").value||0)+Number(document.getElementById("valorProdutoOS").value||0)),
+    dataHora: new Date().toLocaleString()
+  };
+  document.getElementById("textoPDF").innerText = montarTextoOS(obj);
+  var elemento = document.getElementById("areaPDF");
+  html2pdf(elemento, {margin:10,filename:'OS_Power_Electronic.pdf'});
+}
+
+// ######### SALVAR ORDEM #########
+function salvarOS(){
+  var indCli = document.getElementById("osSelectCliente").value;
+  var listaCli = JSON.parse(localStorage.getItem("listaCliente") || "[]");
+  var dadoCli = indCli!=="" ? listaCli[indCli] : {nome:"",telefone:""};
+
+  var os = {
+    tipo: document.getElementById("tipoOS").value,
+    status: document.getElementById("statusOS").value,
+    dataOS: document.getElementById("dataOS").value,
+    clienteNome: dadoCli.nome,
+    clienteTel: dadoCli.telefone,
+    nomeCarro: document.getElementById("nomeCarro").value,
+    modeloCarro: document.getElementById("modeloCarro").value,
+    placa: document.getElementById("placaCarro").value,
+    avarias: pegarAvarias(),
+    obsAvaria: document.getElementById("obsAvaria").value,
+    formaPagamento
